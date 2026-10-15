@@ -1,0 +1,296 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ChronosMatch | Trading Engine Dashboard</title>
+
+    <link rel="stylesheet" href="/static/style.css">
+
+    <script src="/static/script.js" defer></script>
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        <aside class="sidebar">
+
+            <div class="brand">
+                <div class="brand-icon">C</div>
+                <div>
+                    <h2>ChronosMatch</h2>
+                    <span>Trading Infrastructure</span>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <p class="section-label">WORKSPACE</p>
+
+                <a href="#overview" class="nav-link active">
+                    <span>▦</span> Overview
+                </a>
+
+                <a href="#engine" class="nav-link">
+                    <span>⚡</span> Trading Engine
+                </a>
+
+                <a href="#orders" class="nav-link">
+                    <span>⇄</span> Order Activity
+                </a>
+
+                <a href="#performance" class="nav-link">
+                    <span>◷</span> Performance
+                </a>
+            </div>
+
+            <div class="sidebar-bottom">
+                <div class="system-indicator">
+                    <span class="status-dot" id="sidebar-status"></span>
+                    <div>
+                        <strong id="sidebar-status-text">Checking system</strong>
+                        <small>Engine connection</small>
+                    </div>
+                </div>
+
+                <p class="sidebar-version">ChronosMatch v1.0.0</p>
+            </div>
+
+        </aside>
+
+        <main class="main-content">
+
+            <header class="topbar">
+                <div>
+                    <p class="breadcrumb">Workspace / Dashboard</p>
+                    <h1>Trading Engine Dashboard</h1>
+                </div>
+
+                <div class="header-actions">
+                    <span class="environment-badge">DEVELOPMENT</span>
+                    <button id="refresh-btn" class="refresh-button">
+                        ↻ Refresh
+                    </button>
+                </div>
+            </header>
+
+            <section class="welcome-section" id="overview">
+                <div>
+                    <p class="eyebrow">HIGH-PERFORMANCE TRADING</p>
+                    <h2>System Overview</h2>
+                    <p class="muted">
+                        Monitor order processing, engine health and performance.
+                    </p>
+                </div>
+
+                <div class="live-indicator">
+                    <span class="status-dot" id="live-dot"></span>
+                    <span id="connection-label">Waiting for backend</span>
+                </div>
+            </section>
+
+            <section class="stats-grid">
+
+                <article class="stat-card">
+                    <div class="stat-heading">
+                        <span>Total Orders</span>
+                        <span class="stat-icon purple">⇄</span>
+                    </div>
+                    <h3 id="total-orders">0</h3>
+                    <p class="stat-description">Orders processed</p>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-heading">
+                        <span>Orders / Second</span>
+                        <span class="stat-icon blue">⚡</span>
+                    </div>
+                    <h3 id="throughput">--</h3>
+                    <p class="stat-description">Processing throughput</p>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-heading">
+                        <span>Average Latency</span>
+                        <span class="stat-icon orange">◷</span>
+                    </div>
+                    <h3 id="latency">--</h3>
+                    <p class="stat-description">Processing time</p>
+                </article>
+
+                <article class="stat-card">
+                    <div class="stat-heading">
+                        <span>Engine Status</span>
+                        <span class="stat-icon green">✓</span>
+                    </div>
+                    <h3 id="engine-status">Checking</h3>
+                    <p class="stat-description" id="engine-description">
+                        Connecting to API
+                    </p>
+                </article>
+
+            </section>
+
+            <section class="content-grid" id="engine">
+
+                <article class="panel engine-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Engine Monitor</h3>
+                            <p>Core processing components</p>
+                        </div>
+                        <span class="badge">SYSTEM</span>
+                    </div>
+
+                    <div class="component-row">
+                        <div class="component-icon">01</div>
+                        <div class="component-info">
+                            <strong>Order Protocol</strong>
+                            <small>Binary message handling</small>
+                        </div>
+                        <span class="component-status" id="protocol-status">
+                            Pending
+                        </span>
+                    </div>
+
+                    <div class="component-row">
+                        <div class="component-icon">02</div>
+                        <div class="component-info">
+                            <strong>Ring Buffer</strong>
+                            <small>Fixed-capacity order queue</small>
+                        </div>
+                        <span class="component-status" id="buffer-status">
+                            Pending
+                        </span>
+                    </div>
+
+                    <div class="component-row">
+                        <div class="component-icon">03</div>
+                        <div class="component-info">
+                            <strong>Matching Engine</strong>
+                            <small>Order processing core</small>
+                        </div>
+                        <span class="component-status" id="matching-status">
+                            Pending
+                        </span>
+                    </div>
+
+                    <div class="component-row">
+                        <div class="component-icon">04</div>
+                        <div class="component-info">
+                            <strong>Firehose Receiver</strong>
+                            <small>Incoming order stream</small>
+                        </div>
+                        <span class="component-status" id="firehose-status">
+                            Pending
+                        </span>
+                    </div>
+
+                    <div class="panel-note">
+                        Component states will be connected to the backend
+                        during integration.
+                    </div>
+                </article>
+
+                <article class="panel performance-panel" id="performance">
+
+                    <div class="panel-header">
+                        <div>
+                            <h3>Performance Monitor</h3>
+                            <p>Order-processing activity</p>
+                        </div>
+                        <span class="badge">LIVE READY</span>
+                    </div>
+
+                    <div class="performance-summary">
+                        <div>
+                            <span class="muted">Latest throughput</span>
+                            <h2 id="performance-throughput">--</h2>
+                        </div>
+
+                        <div class="performance-unit">orders/sec</div>
+                    </div>
+
+                    <div class="chart-container">
+                        <div class="chart-y-labels">
+                            <span>100%</span>
+                            <span>75%</span>
+                            <span>50%</span>
+                            <span>25%</span>
+                            <span>0%</span>
+                        </div>
+
+                        <div
+                            class="chart"
+                            id="performance-chart"
+                            role="img"
+                            aria-label="Order processing activity chart"
+                        >
+                            <div class="chart-placeholder">
+                                Waiting for performance data
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-footer">
+                        <span>Processing activity</span>
+                        <span id="chart-update-time">Not updated</span>
+                    </div>
+
+                </article>
+
+            </section>
+
+            <section class="panel orders-panel" id="orders">
+
+                <div class="panel-header">
+                    <div>
+                        <h3>Recent Order Activity</h3>
+                        <p>Latest orders received by the dashboard</p>
+                    </div>
+
+                    <button id="orders-refresh-btn" class="text-button">
+                        Refresh orders ↻
+                    </button>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Symbol</th>
+                                <th>Side</th>
+                                <th>Quantity</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="orders-table-body">
+                            <tr>
+                                <td colspan="6" class="empty-state">
+                                    No live orders loaded yet. Connect the
+                                    backend to display order activity.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </section>
+
+            <footer class="footer">
+                <span>ChronosMatch © 2026</span>
+                <span>High-Performance Order Processing System</span>
+            </footer>
+
+        </main>
+
+    </div>
+
+    <div id="notification" class="notification" role="status"></div>
+
+</body>
+</html>
