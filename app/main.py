@@ -1,14 +1,22 @@
-﻿from fastapi import FastAPI, HTTPException
+﻿from pathlib import Path
+
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from chronosmatch.engine import TradingEngine
 from chronosmatch.protocol import Order
 
+
 app = FastAPI(
     title="ChronosMatch API",
     description="Educational order-processing engine API",
-    version="1.0.0",
+    version="1.1.0",
 )
+
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
 
 engine = TradingEngine()
 
@@ -20,13 +28,12 @@ class OrderRequest(BaseModel):
     side: str
 
 
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+
 @app.get("/")
 def home():
-    return {
-        "project": "ChronosMatch",
-        "status": "online",
-        "message": "Educational trading engine API",
-    }
+    return FileResponse(STATIC_DIR / "index.html")
 
 
 @app.get("/health")
@@ -41,22 +48,43 @@ def create_order(request: OrderRequest):
     if side not in ("B", "S"):
         raise HTTPException(
             status_code=422,
-            detail="Side must be B (buy) or S (sell)",
+            detail="side must be B (buy) or S (sell)",
         )
 
-    order = Order(
-        request.order_id,
-        request.price_paise,
-        request.quantity,
-        side,
-    )
-
     try:
+        order = Order(
+            request.order_id,
+            request.price_paise,
+            request.quantity,
+            side,
+        )
         return engine.process_order(order)
     except (ValueError, TypeError, OverflowError) as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
+@app.get("/orders")
+def list_orders():
+    return [
+        {
+            "order_id": order.order_id,
+            "side": order.side.upper(),
+            "price_paise": order.price_paise,
+            "quantity": order.quantity,
+            "status": "accepted",
+        }
+        for order in reversed(engine.orders)
+    ]
+
+
 @app.get("/stats")
-def get_stats():
-    return engine.get_stats()
+def stats():
+    result = engine.get_stats()
+    result.update(engine.get_performance_stats())
+    result["components"] = {
+        "protocol": "online",
+        "ring_buffer": "available",
+        "matching_engine": "online",
+        "firehose": "not_started",
+    }
+    return result

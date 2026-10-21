@@ -284,71 +284,61 @@ function updateStats(payload) {
 
 function updateComponentStatuses(data) {
     const components = {
-        "protocol-status": [
-            "protocol",
-            "order_protocol"
-        ],
-
-        "buffer-status": [
-            "ring_buffer",
-            "buffer"
-        ],
-
-        "matching-status": [
-            "matching_engine",
-            "engine"
-        ],
-
-        "firehose-status": [
-            "firehose",
-            "receiver"
-        ]
+        "protocol-status": ["protocol", "order_protocol"],
+        "buffer-status": ["ring_buffer", "buffer"],
+        "matching-status": ["matching_engine", "engine"],
+        "firehose-status": ["firehose", "receiver"]
     };
+
+    const componentData =
+        data?.components && typeof data.components === "object"
+            ? data.components
+            : data;
 
     for (const [elementId, keys] of Object.entries(components)) {
         const element = $(elementId);
-
         if (!element) continue;
 
         let value;
 
         for (const key of keys) {
-            if (data && data[key] !== undefined) {
-                value = data[key];
+            if (
+                componentData &&
+                Object.prototype.hasOwnProperty.call(componentData, key)
+            ) {
+                value = componentData[key];
                 break;
             }
         }
 
-        if (value === undefined) {
+        element.className = "component-status";
+
+        if (value === undefined || value === null) {
             element.textContent = "Not reported";
-            element.className = "component-status";
             continue;
         }
 
+        const normalized = String(value).toLowerCase();
+
         const isOnline =
             value === true ||
-            value === "online" ||
-            value === "healthy" ||
-            value === "running";
+            ["online", "healthy", "running"].includes(normalized);
 
         const isOffline =
             value === false ||
-            value === "offline" ||
-            value === "stopped" ||
-            value === "error";
-
-        element.textContent = isOnline
-            ? "Online"
-            : isOffline
-                ? "Offline"
-                : String(value);
-
-        element.className = "component-status";
+            ["offline", "stopped", "error"].includes(normalized);
 
         if (isOnline) {
+            element.textContent = "Online";
             element.classList.add("online");
         } else if (isOffline) {
+            element.textContent = "Offline";
             element.classList.add("offline");
+        } else if (["not_started", "not started"].includes(normalized)) {
+            element.textContent = "Not Started";
+        } else {
+            element.textContent =
+                normalized === "available" ? "Available" : String(value);
         }
     }
 }
@@ -490,7 +480,10 @@ function renderOrders(orders) {
             order.qty ??
             order.size;
 
-        const price = order.price ?? order.limit_price;
+        const price = order.price ?? order.limit_price ??
+            (order.price_paise != null
+                ? (Number(order.price_paise) / 100).toFixed(2)
+                : undefined);
 
         const status = String(
             order.status ?? order.state ?? "Received"
@@ -666,3 +659,6 @@ function initializeDashboard() {
 }
 
 document.addEventListener("DOMContentLoaded", initializeDashboard);
+
+
+

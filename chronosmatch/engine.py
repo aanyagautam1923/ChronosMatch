@@ -1,4 +1,6 @@
 ﻿from dataclasses import dataclass
+from time import perf_counter
+from collections import deque
 
 from chronosmatch.protocol import Order
 
@@ -17,9 +19,13 @@ class TradingEngine:
     def __init__(self):
         self.stats = EngineStats()
         self.orders: list[Order] = []
+        self._start_time = perf_counter()
+        self._latencies_ms = deque(maxlen=1000)
 
     def process_order(self, order: Order) -> dict:
-        # Validate that the order can be encoded before accepting it.
+        start = perf_counter()
+
+        # Validate before modifying engine state.
         order.pack()
 
         self.orders.append(order)
@@ -31,6 +37,8 @@ class TradingEngine:
         else:
             self.stats.sell_orders += 1
 
+        self._latencies_ms.append((perf_counter() - start) * 1000)
+
         return {
             "order_id": order.order_id,
             "side": order.side.upper(),
@@ -40,9 +48,27 @@ class TradingEngine:
         }
 
     def get_stats(self) -> dict:
+        # Preserve the exact original response for existing tests.
         return {
             "orders_processed": self.stats.orders_processed,
             "buy_orders": self.stats.buy_orders,
             "sell_orders": self.stats.sell_orders,
             "total_quantity": self.stats.total_quantity,
+        }
+
+    def get_performance_stats(self) -> dict:
+        elapsed_seconds = perf_counter() - self._start_time
+
+        return {
+            "orders_per_second": (
+                self.stats.orders_processed / elapsed_seconds
+                if elapsed_seconds > 0
+                else 0.0
+            ),
+            "average_latency_ms": (
+                sum(self._latencies_ms) / len(self._latencies_ms)
+                if self._latencies_ms
+                else None
+            ),
+            "latency_unit": "ms",
         }
