@@ -1,0 +1,21 @@
+{
+    "project": "ChronosMatch",
+    "benchmark_type": "Python TradingEngine",
+    "environment": {
+        "python_version": "3.12.10",
+        "platform": "Windows-11-10.0.26300-SP0"
+    },
+    "results": {
+        "orders_per_run": 10000,
+        "repetitions": 3,
+        "average_throughput_orders_per_second": 272207.51,
+        "best_throughput_orders_per_second": 298601.05,
+        "average_latency_ms": 0.002461,
+        "median_latency_ms": 0.0022
+    },
+    "notes": [
+        "Local educational simulation measurements.",
+        "Not production exchange performance.",
+        "Cython comparison pending native compilation."
+    ]
+}
