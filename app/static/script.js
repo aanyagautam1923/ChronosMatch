@@ -20,8 +20,8 @@
 
 const CONFIG = {
     healthEndpoints: ["/health", "/api/health"],
-    statsEndpoints: ["/api/stats", "/stats"],
-    orderEndpoints: ["/api/orders", "/orders"],
+    statsEndpoints: ["/stats"],
+    orderEndpoints: ["/orders"],
     refreshInterval: 5000,
     requestTimeout: 4000,
     maxChartPoints: 24,
@@ -659,6 +659,7 @@ function initializeDashboard() {
 }
 
 document.addEventListener("DOMContentLoaded", initializeDashboard);
+
 
 
 

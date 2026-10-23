@@ -5,3 +5,11 @@ __pycache__/
 .pytest_cache/
 .env
 data/*.dat
+
+# Generated Cython build files
+/build/
+/chronosmatch/engine_cython.c
+/chronosmatch/engine_cython*.pyd
+
+# Local backup files
+*.backup-*
