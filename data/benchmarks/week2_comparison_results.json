@@ -1,30 +1,24 @@
-{
-    "project": "ChronosMatch",
-    "benchmark_type": "Python vs compiled Cython",
-    "environment": {
-        "python_version": "3.12.10",
-        "platform": "Windows-11-10.0.26300-SP0"
-    },
-    "configuration": {
-        "orders_per_run": 10000,
-        "repetitions": 3
-    },
-    "python_engine": {
-        "average_throughput_orders_per_second": 192752.09,
-        "best_throughput_orders_per_second": 241969.63,
-        "average_latency_ms": 0.004285,
-        "median_latency_ms": 0.0023
-    },
-    "cython_engine": {
-        "average_throughput_orders_per_second": 246440.17,
-        "best_throughput_orders_per_second": 309371.48,
-        "average_latency_ms": 0.003606,
-        "median_latency_ms": 0.0011
-    },
-    "notes": [
-        "Local educational simulation measurements.",
-        "Not production exchange performance.",
-        "Results may vary with system load and runtime conditions."
-    ],
-    "cython_speedup_ratio": 1.28
+﻿{
+  "project": "ChronosMatch",
+  "week": 2,
+  "environment": {
+    "python": "3.12.10",
+    "platform": "Windows",
+    "orders_per_run": 10000,
+    "repetitions": 3
+  },
+  "python_engine": {
+    "average_throughput_orders_per_second": 326788,
+    "best_throughput_orders_per_second": 345550,
+    "average_latency_ms": 0.002066,
+    "median_latency_ms": 0.002
+  },
+  "cython_engine": {
+    "average_throughput_orders_per_second": 806500,
+    "best_throughput_orders_per_second": 889094,
+    "average_latency_ms": 0.000963,
+    "median_latency_ms": 0.0009
+  },
+  "cython_python_throughput_ratio": 2.47,
+  "notes": "Local benchmark results for an educational simulation. Results vary with hardware and system load and are not production exchange performance guarantees."
 }
