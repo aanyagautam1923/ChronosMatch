@@ -1,4 +1,4 @@
-"use strict";
+﻿"use strict";
 
 /*
  * ChronosMatch Dashboard
@@ -197,8 +197,8 @@ function formatLatency(value, unit) {
     }
 
     if (normalizedUnit.includes("us") ||
-        normalizedUnit.includes("µs")) {
-        return `${formatNumber(value)} µs`;
+        normalizedUnit.includes("Âµs")) {
+        return `${formatNumber(value)} Âµs`;
     }
 
     if (normalizedUnit.includes("ms")) {
@@ -265,8 +265,7 @@ function updateStats(payload) {
     state.lastStats = stats;
 
     setText("total-orders", formatNumber(stats.totalOrders));
-    setText("throughput",
-            "throughput", formatNumber(stats.throughput));
+    setText("throughput", formatNumber(stats.throughput));
 
     setText(
         "latency",
@@ -612,7 +611,7 @@ async function refreshDashboard(showMessage = false) {
 
         if (button) {
             button.disabled = false;
-            button.textContent = "↻ Refresh";
+            button.textContent = "â†» Refresh";
         }
     }
 }
@@ -662,3 +661,4 @@ function initializeDashboard() {
 }
 
 document.addEventListener("DOMContentLoaded", initializeDashboard);
+
