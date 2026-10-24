@@ -2,149 +2,88 @@
 
 ## 1. Overview
 
-Week 2 focuses on improving the order management and matching
-capabilities of ChronosMatch, an educational high-frequency trading
-(HFT) engine simulation.
+Week 2 improves the order management and matching capabilities of ChronosMatch, an educational high-frequency trading (HFT) engine simulation. It introduces a Limit Order Book, price-time priority, order matching, partial fills, Cython-based performance experimentation, and benchmark reporting.
 
-The main objectives are:
-- Implement a Limit Order Book.
-- Support price-time priority.
-- Match incoming buy and sell orders.
-- Handle partial order execution.
-- Prepare a Cython-based engine for performance optimization.
-- Test correctness and prepare performance benchmarks.
+This project is an educational simulation and is not connected to a real exchange.
 
 ## 2. Limit Order Book
 
-A Limit Order Book maintains outstanding buy and sell orders.
-
-It contains two sides:
+The Limit Order Book maintains outstanding buy and sell orders.
 
 - Bids: Buy orders.
 - Asks: Sell orders.
+- Best bid: Highest outstanding buy price.
+- Best ask: Lowest outstanding sell price.
 
-The best bid is the highest available buy price.
-The best ask is the lowest available sell price.
-
-When compatible buy and sell orders arrive, the engine attempts
-to match them.
+The implementation is available in `chronosmatch/order_book.py`.
 
 ## 3. Price-Time Priority
 
-The matching system follows price-time priority.
+Orders are prioritised by price and then by arrival time.
 
-For buy orders:
-- A higher price has priority.
-- At the same price, the earlier order has priority.
+- Buy orders with higher prices receive priority.
+- Sell orders with lower prices receive priority.
+- Orders at the same price are processed in arrival order.
 
-For sell orders:
-- A lower price has priority.
-- At the same price, the earlier order has priority.
+## 4. Order Matching and Partial Fills
 
-This approach provides deterministic ordering when multiple
-orders compete for execution.
+When a new order crosses the opposite side of the book, the order book attempts to match it against eligible resting orders.
 
-## 4. Order Matching
+The matching process supports:
+- Trade execution when buy and sell prices cross.
+- Partial fills when the available quantity is smaller than the incoming order quantity.
+- Remaining quantities staying in the book when they cannot be fully matched.
+- Best bid and best ask inspection.
+- Book snapshots with configurable depth.
 
-An incoming order is compared with compatible orders on the
-opposite side of the book.
+## 5. Cython Performance Experiment
 
-If the prices are compatible, the engine matches the smaller
-remaining quantity.
+The Cython implementation is provided in `chronosmatch/engine_cython.pyx`.
 
-Possible outcomes:
+To build the extension in the development environment, activate the virtual environment and run:
 
-- Full execution: The incoming order is completely filled.
-- Partial execution: Only part of the incoming order is filled.
-- Resting order: The unfilled quantity remains in the book.
+`python setup.py build_ext --inplace`
 
-The implementation must preserve the remaining quantity
-correctly after partial execution.
+A successful build creates native build artifacts locally. Generated C and platform-specific extension files are build outputs and are not intended to be committed as source files.
 
-## 5. Cython Optimization
+## 6. Benchmark Results
 
-The project includes a Cython source file:
+The saved Python-versus-Cython comparison report is located at `data/benchmarks/week2_comparison_results.json`.
 
-`chronosmatch/engine_cython.pyx`
+Recorded results from that comparison run:
 
-The purpose is to compile performance-sensitive engine logic
-into a native extension.
+| Metric | Python | Cython |
+|---|---:|---:|
+| Average throughput | 192,752.09 orders/sec | 246,440.17 orders/sec |
+| Best throughput | 241,969.63 orders/sec | 309,371.48 orders/sec |
+| Average latency | 0.004285 ms | 0.003606 ms |
+| Median latency | 0.0023 ms | 0.0011 ms |
 
-The source code has been prepared, but successful native
-compilation and performance comparison must be verified after
-the required C++ build tools are available.
+The recorded comparison reports approximately 1.28x Cython speedup for that run. Results depend on hardware, system load, and benchmark conditions; they should not be treated as production performance guarantees.
 
-Python and Cython benchmark results should be measured using
-the same workload and comparable conditions.
+Python benchmark results are also saved in `data/benchmarks/week2_python_results.json`.
 
-## 6. Testing Strategy
+## 7. Running Tests
 
-The order book test suite covers important behaviours:
+Activate the project's virtual environment, then run:
 
-- Adding buy orders.
-- Adding sell orders.
-- Matching compatible orders.
-- Price priority.
-- Time priority.
-- Partial fills.
-- Remaining quantities.
-- Invalid order handling.
-- Snapshot depth validation.
-- Empty order book behaviour.
+`python -m pytest -q`
 
-Run the order book tests with:
+The tests cover the API, engine, order book, protocol, ring buffer, and firehose components.
 
-`python -m pytest tests/test_order_book.py -v`
+## 8. Project Limitations
 
-Run the complete test suite with:
-
-`python -m pytest -v`
-
-## 7. Performance Measurement
-
-Performance evaluation should consider:
-
-- Orders processed per second.
-- Average processing latency.
-- Number of processed orders.
-- Buy and sell order counts.
-- Total processed quantity.
-
-A fair comparison should use the same input workload and
-multiple benchmark repetitions.
-
-Benchmark results should be recorded rather than assumed.
-
-## 8. Complexity Considerations
-
-The theoretical complexity depends on the data structures
-and matching implementation.
-
-Typical considerations include:
-
-- Inspecting the best bid or ask: O(1) when directly accessible.
-- Finding a matching order: depends on the book structure.
-- Matching multiple orders: depends on the number of orders filled.
-- Generating a snapshot of depth k: at least O(k) to return k entries.
-
-These are general expectations, not guaranteed performance
-measurements of the current implementation.
+- This project is an educational trading-engine simulation.
+- It does not connect to an exchange or execute real financial transactions.
+- Benchmark measurements are local experimental results.
+- Performance can vary between machines and runs.
 
 ## 9. Week 2 Completion Checklist
 
-- [x] Implement the Limit Order Book.
-- [x] Add price-time priority behaviour.
-- [x] Add order book unit tests.
-- [x] Prepare the Cython engine source.
-- [ ] Complete native Cython compilation.
-- [ ] Verify the compiled extension.
-- [ ] Implement and validate benchmark comparisons.
-- [ ] Record measured performance results.
-- [ ] Run the complete test suite.
-- [ ] Commit and push the verified Week 2 changes.
-
-## 10. Project Scope
-
-ChronosMatch is an educational trading engine simulation.
-It is not a production exchange and does not connect to a
-real stock market or execute real financial transactions.
+- [x] Limit Order Book implementation
+- [x] Price-time priority
+- [x] Matching and partial-fill test coverage
+- [x] Cython source and build configuration
+- [x] Python/Cython benchmark comparison report
+- [x] Week 2 technical documentation
+- [x] Automated test suite

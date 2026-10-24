@@ -21,6 +21,7 @@ class TradingEngine:
         self.orders: list[Order] = []
         self._start_time = perf_counter()
         self._latencies_ms = deque(maxlen=1000)
+        self._order_timestamps = deque(maxlen=1000)
 
     def process_order(self, order: Order) -> dict:
         start = perf_counter()
@@ -37,7 +38,9 @@ class TradingEngine:
         else:
             self.stats.sell_orders += 1
 
-        self._latencies_ms.append((perf_counter() - start) * 1000)
+        finished = perf_counter()
+        self._latencies_ms.append((finished - start) * 1000)
+        self._order_timestamps.append(finished)
 
         return {
             "order_id": order.order_id,
@@ -48,7 +51,7 @@ class TradingEngine:
         }
 
     def get_stats(self) -> dict:
-        # Preserve the exact original response for existing tests.
+        # Preserve the original response for existing tests.
         return {
             "orders_processed": self.stats.orders_processed,
             "buy_orders": self.stats.buy_orders,
@@ -57,7 +60,22 @@ class TradingEngine:
         }
 
     def get_performance_stats(self) -> dict:
-        elapsed_seconds = perf_counter() - self._start_time
+        now = perf_counter()
+        elapsed_seconds = now - self._start_time
+
+        # Recent throughput uses the interval between the oldest and newest
+        # timestamps in the rolling window. One order has no measurable interval.
+        if len(self._order_timestamps) >= 2:
+            recent_interval = (
+                self._order_timestamps[-1] - self._order_timestamps[0]
+            )
+            recent_throughput = (
+                (len(self._order_timestamps) - 1) / recent_interval
+                if recent_interval > 0
+                else 0.0
+            )
+        else:
+            recent_throughput = 0.0
 
         return {
             "orders_per_second": (
@@ -65,6 +83,7 @@ class TradingEngine:
                 if elapsed_seconds > 0
                 else 0.0
             ),
+            "recent_orders_per_second": recent_throughput,
             "average_latency_ms": (
                 sum(self._latencies_ms) / len(self._latencies_ms)
                 if self._latencies_ms

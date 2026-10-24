@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 /*
  * ChronosMatch Dashboard
@@ -225,6 +225,7 @@ function normalizeStats(payload) {
         ]),
 
         throughput: getNumber(data, [
+            "recent_orders_per_second",
             "throughput",
             "orders_per_second",
             "orders_per_sec",
@@ -233,6 +234,7 @@ function normalizeStats(payload) {
         ]),
 
         latency: getNumber(data, [
+            "average_latency_ms",
             "average_latency",
             "avg_latency",
             "latency_avg",
@@ -263,7 +265,8 @@ function updateStats(payload) {
     state.lastStats = stats;
 
     setText("total-orders", formatNumber(stats.totalOrders));
-    setText("throughput", formatNumber(stats.throughput));
+    setText("throughput",
+            "throughput", formatNumber(stats.throughput));
 
     setText(
         "latency",
@@ -659,7 +662,3 @@ function initializeDashboard() {
 }
 
 document.addEventListener("DOMContentLoaded", initializeDashboard);
-
-
-
-
