@@ -1,0 +1,19 @@
+{
+  "project": "ChronosMatch",
+  "format_version": 1,
+  "exported_at_utc": "2026-10-24T15:08:21.811733+00:00",
+  "snapshot": {
+    "bids": [
+      {
+        "price_paise": 10500,
+        "quantity": 10
+      }
+    ],
+    "asks": [
+      {
+        "price_paise": 10600,
+        "quantity": 5
+      }
+    ]
+  }
+}
