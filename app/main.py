@@ -1,13 +1,9 @@
 ﻿from pathlib import Path
 import os
-import secrets
-
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
-from starlette.middleware.sessions import SessionMiddleware
-
 from chronosmatch.engine import TradingEngine
 from chronosmatch.protocol import Order
 app = FastAPI(
@@ -28,14 +24,6 @@ class OrderRequest(BaseModel):
     side: str
 
 
-session_secret = os.getenv("CHRONOSMATCH_SESSION_SECRET")
-if not session_secret:
-    session_secret = secrets.token_urlsafe(48)
-    import warnings
-    warnings.warn(
-        "CHRONOSMATCH_SESSION_SECRET is not set. Sessions will reset on restart.",
-        RuntimeWarning,
-    )
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
