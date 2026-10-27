@@ -1,4 +1,4 @@
-﻿from pathlib import Path
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
@@ -75,6 +75,18 @@ def list_orders():
         }
         for order in reversed(engine.orders)
     ]
+
+
+@app.get("/orderbook")
+def get_order_book(depth: int = 5):
+    """Return the current limit order book."""
+    if depth < 1 or depth > 100:
+        raise HTTPException(
+            status_code=422,
+            detail="depth must be between 1 and 100",
+        )
+
+    return engine.get_order_book(depth=depth)
 
 
 @app.get("/stats")
