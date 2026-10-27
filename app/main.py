@@ -89,6 +89,18 @@ def get_order_book(depth: int = 5):
     return engine.get_order_book(depth=depth)
 
 
+@app.get("/trades")
+def get_trades(limit: int = 100):
+    """Return the most recent executed trades."""
+    if limit < 1 or limit > 1000:
+        raise HTTPException(
+            status_code=422,
+            detail="limit must be between 1 and 1000",
+        )
+
+    return engine.get_trades(limit=limit)
+
+
 @app.get("/stats")
 def stats():
     result = engine.get_stats()
