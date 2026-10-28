@@ -22,6 +22,8 @@ const CONFIG = {
     healthEndpoints: ["/health", "/api/health"],
     statsEndpoints: ["/stats"],
     orderEndpoints: ["/orders"],
+    orderBookEndpoints: ["/orderbook"],
+    tradesEndpoints: ["/trades"],
     refreshInterval: 5000,
     requestTimeout: 4000,
     maxChartPoints: 24,
@@ -552,6 +554,12 @@ async function refreshDashboard(showMessage = false) {
             CONFIG.orderEndpoints
         );
 
+        const orderBookResult = await tryEndpoints(CONFIG.orderBookEndpoints);
+        const tradesResult = await tryEndpoints(CONFIG.tradesEndpoints);
+
+        state.lastOrderBook = orderBookResult.ok ? orderBookResult.data : null;
+        state.lastTrades = tradesResult.ok ? normalizeOrders(tradesResult.data) : [];
+
         const online =
             healthResult.ok ||
             statsResult.ok ||
@@ -661,4 +669,6 @@ function initializeDashboard() {
 }
 
 document.addEventListener("DOMContentLoaded", initializeDashboard);
+
+
 
