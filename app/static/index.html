@@ -281,6 +281,60 @@
 
             </section>
 
+            <section class="panel" id="order-book">
+                <div class="panel-header">
+                    <div>
+                        <h3>Order Book</h3>
+                        <p>Current buy and sell orders</p>
+                    </div>
+                    <span class="status-badge">Live API</span>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Side</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderbook-table-body">
+                            <tr>
+                                <td colspan="3" class="empty-state">Waiting for order book data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel" id="recent-trades">
+                <div class="panel-header">
+                    <div>
+                        <h3>Recent Trades</h3>
+                        <p>Recently executed trades</p>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Trade ID</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trades-table-body">
+                            <tr>
+                                <td colspan="4" class="empty-state">Waiting for trade data...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
             <footer class="footer">
                 <span>ChronosMatch © 2026</span>
                 <span>High-Performance Order Processing System</span>
@@ -294,3 +348,4 @@
 
 </body>
 </html>
+

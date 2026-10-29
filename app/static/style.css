@@ -719,3 +719,43 @@ tbody tr:hover {
         grid-template-columns: 1fr;
     }
 }
+
+/* Week 3: Order Book and Recent Trades */
+#order-book,
+#recent-trades {
+    margin-top: 22px;
+}
+
+#order-book table,
+#recent-trades table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#order-book tbody tr:hover,
+#recent-trades tbody tr:hover {
+    background: rgba(255, 255, 255, 0.035);
+}
+
+#order-book td,
+#recent-trades td {
+    padding: 12px 14px;
+}
+
+#orderbook-table-body td:first-child {
+    font-weight: 600;
+}
+
+#orderbook-table-body td:first-child {
+    text-transform: capitalize;
+}
+
+#orderbook-table-body td,
+#trades-table-body td {
+    overflow-wrap: anywhere;
+}
+
+#order-book .table-wrapper,
+#recent-trades .table-wrapper {
+    border-radius: 8px;
+}

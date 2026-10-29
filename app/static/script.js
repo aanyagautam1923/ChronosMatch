@@ -529,6 +529,116 @@ function renderOrders(orders) {
     });
 }
 
+function renderOrderBook(payload) {
+    const tbody = $("orderbook-table-body");
+    if (!tbody) return;
+
+    tbody.replaceChildren();
+
+    const rows = [];
+
+    function addSide(side, orders) {
+        if (!Array.isArray(orders)) return;
+
+        orders.forEach(order => {
+            rows.push({
+                side,
+                price: order.price ?? order.limit_price ?? order.price_per_unit,
+                quantity: order.quantity ?? order.qty ?? order.size
+            });
+        });
+    }
+
+    if (Array.isArray(payload)) {
+        payload.forEach(order => {
+            rows.push({
+                side: order.side ?? order.type ?? "Unknown",
+                price: order.price ?? order.limit_price ?? order.price_per_unit,
+                quantity: order.quantity ?? order.qty ?? order.size
+            });
+        });
+    } else if (payload && typeof payload === "object") {
+        addSide("Buy", payload.bids ?? payload.buy_orders ?? payload.buy);
+        addSide("Sell", payload.asks ?? payload.sell_orders ?? payload.sell);
+
+        if (!rows.length && Array.isArray(payload.orders)) {
+            payload.orders.forEach(order => {
+                rows.push({
+                    side: order.side ?? order.type ?? "Unknown",
+                    price: order.price ?? order.limit_price ?? order.price_per_unit,
+                    quantity: order.quantity ?? order.qty ?? order.size
+                });
+            });
+        }
+
+        if (!rows.length && payload.data && payload.data !== payload) {
+            renderOrderBook(payload.data);
+            return;
+        }
+    }
+
+    if (!rows.length) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 3;
+        cell.className = "empty-state";
+        cell.textContent = "No order book entries available.";
+        row.appendChild(cell);
+        tbody.appendChild(row);
+        return;
+    }
+
+    rows.forEach(order => {
+        const row = document.createElement("tr");
+
+        [order.side, formatNumber(order.price), formatNumber(order.quantity)]
+            .forEach(value => {
+                const cell = document.createElement("td");
+                cell.textContent = value ?? "--";
+                row.appendChild(cell);
+            });
+
+        tbody.appendChild(row);
+    });
+}
+
+function renderRecentTrades(trades) {
+    const tbody = $("trades-table-body");
+    if (!tbody) return;
+
+    tbody.replaceChildren();
+
+    if (!Array.isArray(trades) || !trades.length) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 4;
+        cell.className = "empty-state";
+        cell.textContent = "No executed trades available.";
+        row.appendChild(cell);
+        tbody.appendChild(row);
+        return;
+    }
+
+    trades.slice(0, 50).forEach((trade, index) => {
+        const row = document.createElement("tr");
+
+        const values = [
+            trade.trade_id ?? trade.id ?? `Trade ${index + 1}`,
+            formatNumber(trade.price ?? trade.trade_price),
+            formatNumber(trade.quantity ?? trade.qty ?? trade.size),
+            trade.timestamp ?? trade.time ?? "--"
+        ];
+
+        values.forEach(value => {
+            const cell = document.createElement("td");
+            cell.textContent = String(value ?? "--");
+            row.appendChild(cell);
+        });
+
+        tbody.appendChild(row);
+    });
+}
+
 async function refreshDashboard(showMessage = false) {
     if (state.refreshing) return;
 
@@ -559,6 +669,9 @@ async function refreshDashboard(showMessage = false) {
 
         state.lastOrderBook = orderBookResult.ok ? orderBookResult.data : null;
         state.lastTrades = tradesResult.ok ? normalizeOrders(tradesResult.data) : [];
+
+        renderOrderBook(state.lastOrderBook);
+        renderRecentTrades(state.lastTrades);
 
         const online =
             healthResult.ok ||
@@ -669,6 +782,8 @@ function initializeDashboard() {
 }
 
 document.addEventListener("DOMContentLoaded", initializeDashboard);
+
+
 
 
 
