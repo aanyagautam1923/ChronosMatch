@@ -31,18 +31,24 @@ Provides functionality for packing and unpacking structured order records in bin
 Implements an in-memory order-processing component and tracks basic engine statistics.
 
 ### 3. Ring Buffer
-Demonstrates fixed-capacity buffer operations and FIFO processing concepts.
+Provides a fixed-capacity FIFO byte buffer used by the trading engine to stage
+the binary representation of each accepted order.
 
-### 4. TCP Firehose
+### 4. Limit Order Book
+Maintains bids and asks using price-time priority, matches crossing orders,
+supports partial fills, and exposes book depth and recent executions.
+
+### 5. TCP Firehose
 Explores sending and receiving binary order records over a TCP connection.
 
-### 5. FastAPI Backend
-Provides HTTP endpoints for health checks, order submission, and engine statistics.
+### 6. FastAPI Backend
+Provides HTTP endpoints for health checks, order submission, order history,
+order-book depth, recent trades, and engine statistics.
 
-### 6. Performance Benchmarking
+### 7. Latency and Performance Benchmarking
 Measures the time required to process a configurable number of orders.
 
-### 7. Automated Testing
+### 8. Automated Testing
 Uses pytest to validate application components and reduce regressions.
 
 ---
@@ -147,6 +153,9 @@ The API documentation can be used to inspect and test the available endpoints.
 | GET | `/` | Returns the application home response |
 | GET | `/health` | Checks API availability |
 | POST | `/orders` | Submits an order |
+| GET | `/orders` | Lists accepted orders |
+| GET | `/orderbook?depth=5` | Returns bid and ask depth |
+| GET | `/trades?limit=100` | Returns recent executed trades |
 | GET | `/stats` | Retrieves engine statistics |
 
 The exact request and response formats can be inspected through the interactive API documentation.
@@ -175,9 +184,9 @@ python -m pytest tests/test_ring_buffer.py -v
 
 ### Current Testing Status
 
-An earlier test run completed successfully with **21 tests passed**.
-
-Run the tests again after making changes to confirm the current project status.
+The test suite covers the protocol, matching engine and order book, ring buffer,
+latency tracking, TCP firehose, and HTTP API. Run it after changes to confirm the
+current project status.
 
 ---
 
@@ -211,15 +220,17 @@ The sample dataset is fictional and is not real stock-market data.
 
 ---
 
-## Future Improvements
+## Week 1–3 Status
 
-- Complete and refine the interactive web dashboard.
-- Improve order validation and error handling.
-- Display engine statistics dynamically.
-- Expand automated test coverage.
-- Improve benchmark reporting.
-- Add structured logging and monitoring.
-- Improve project documentation and demonstration materials.
+- Week 1: binary order protocol, trading engine, FastAPI service, and baseline
+  automated tests.
+- Week 2: price-time-priority limit order book, partial fills, Cython
+  performance experiment, and benchmark reports.
+- Week 3: ring-buffer integration, TCP firehose receiver, latency metrics,
+  order-book and trade APIs, and a live dashboard connected to those APIs.
+
+See [Week 2 technical documentation](docs/WEEK_2.md) and
+[Week 3 technical documentation](docs/WEEK_3.md) for implementation details.
 
 ---
 

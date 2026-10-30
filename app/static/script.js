@@ -433,6 +433,14 @@ function safeValue(value, fallback = "--") {
     return String(value);
 }
 
+function displayPrice(order) {
+    if (order?.price_paise !== undefined && order.price_paise !== null) {
+        return (Number(order.price_paise) / 100).toFixed(2);
+    }
+
+    return order?.price ?? order?.limit_price ?? order?.price_per_unit;
+}
+
 function createCell(value, className = "") {
     const cell = document.createElement("td");
 
@@ -546,7 +554,7 @@ function renderOrderBook(payload) {
         orders.forEach(order => {
             rows.push({
                 side,
-                price: order.price ?? order.limit_price ?? order.price_per_unit,
+                price: displayPrice(order),
                 quantity: order.quantity ?? order.qty ?? order.size
             });
         });
@@ -556,7 +564,7 @@ function renderOrderBook(payload) {
         payload.forEach(order => {
             rows.push({
                 side: order.side ?? order.type ?? "Unknown",
-                price: order.price ?? order.limit_price ?? order.price_per_unit,
+                price: displayPrice(order),
                 quantity: order.quantity ?? order.qty ?? order.size
             });
         });
@@ -626,8 +634,9 @@ function renderRecentTrades(trades) {
         const row = document.createElement("tr");
 
         const values = [
-            trade.trade_id ?? trade.id ?? `Trade ${index + 1}`,
-            formatNumber(trade.price ?? trade.trade_price),
+            trade.trade_id ?? trade.id ??
+                `${trade.buy_order_id ?? "?"} → ${trade.sell_order_id ?? "?"}`,
+            formatNumber(displayPrice(trade)),
             formatNumber(trade.quantity ?? trade.qty ?? trade.size),
             trade.timestamp ?? trade.time ?? "--"
         ];
