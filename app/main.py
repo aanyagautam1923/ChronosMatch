@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -6,19 +7,41 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from chronosmatch.engine import TradingEngine
+from chronosmatch.firehose import FirehoseReceiver
 from chronosmatch.protocol import Order
+
+
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = BASE_DIR / "static"
+
+engine = TradingEngine()
+
+firehose_receiver = FirehoseReceiver(
+    on_order=engine.process_order,
+    host="127.0.0.1",
+    port=9000,
+)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        firehose_receiver.start()
+    except OSError as exc:
+        firehose_receiver.last_error = str(exc)
+        print(f"Firehose could not start: {exc}")
+
+    yield
+
+    firehose_receiver.stop()
 
 
 app = FastAPI(
     title="ChronosMatch API",
     description="Educational order-processing engine API",
     version="1.1.0",
+    lifespan=lifespan,
 )
-
-BASE_DIR = Path(__file__).resolve().parent
-STATIC_DIR = BASE_DIR / "static"
-
-engine = TradingEngine()
 
 
 class OrderRequest(BaseModel):
@@ -105,10 +128,14 @@ def get_trades(limit: int = 100):
 def stats():
     result = engine.get_stats()
     result.update(engine.get_performance_stats())
+
     result["components"] = {
         "protocol": "online",
-        "ring_buffer": "available",
+        "ring_buffer": ("online" if hasattr(engine, "ring_buffer") else "offline"),
         "matching_engine": "online",
-        "firehose": "not_started",
+        "firehose": (
+            "online" if firehose_receiver.is_running else "offline"
+        ),
     }
+
     return result

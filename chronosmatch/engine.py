@@ -1,10 +1,12 @@
-from dataclasses import dataclass
+﻿from dataclasses import dataclass
 from time import perf_counter, perf_counter_ns
 from collections import deque
+from threading import Lock
 
 from chronosmatch.latency import LatencyTracker
 from chronosmatch.order_book import LimitOrderBook
 from chronosmatch.protocol import Order
+from chronosmatch.ring_buffer import RingBuffer
 
 
 @dataclass
@@ -26,71 +28,83 @@ class TradingEngine:
         self.order_book = LimitOrderBook()
         self._start_time = perf_counter()
         self._order_timestamps = deque(maxlen=1000)
+
         self.processing_latency = LatencyTracker(max_samples=1000)
         self.trade_latency = LatencyTracker(max_samples=1000)
 
+        # Fixed-capacity FIFO buffer used by the engine.
+        self.ring_buffer = RingBuffer(capacity=1024)
+
+        # Protect buffer and matching operations from concurrent callers.
+        self._processing_lock = Lock()
+
     def process_order(self, order: Order) -> dict:
-        entry_ns = self.processing_latency.start()
+        # Validate before adding anything to the buffer.
+        packed_order = order.pack()
 
-        # Validate the order before modifying engine state.
-        order.pack()
-        normalized_side = order.side.upper()
+        with self._processing_lock:
+            entry_ns = self.processing_latency.start()
 
-        # Capture trade count before submitting the order.
-        previous_trade_count = len(self.order_book.trades)
+            # Stage the binary order in the FIFO Ring Buffer.
+            self.ring_buffer.put(packed_order)
 
-        # Matching and book updates happen here.
-        executed_trades = self.order_book.add_order(order)
+            # Retrieve and reconstruct the order from the buffer.
+            buffered_data = self.ring_buffer.get()
+            processed_order = Order.unpack(buffered_data)
 
-        exit_ns = perf_counter_ns()
-        processing_ns = self.processing_latency.record(entry_ns, exit_ns)
+            normalized_side = processed_order.side.upper()
 
-        # Record only after successful order-book processing.
-        self.orders.append(order)
-        self.stats.orders_processed += 1
-        self.stats.total_quantity += order.quantity
+            # Submit the reconstructed order to the matching engine.
+            executed_trades = self.order_book.add_order(processed_order)
 
-        if normalized_side == "B":
-            self.stats.buy_orders += 1
-        else:
-            self.stats.sell_orders += 1
+            exit_ns = perf_counter_ns()
+            processing_ns = self.processing_latency.record(
+                entry_ns, exit_ns
+            )
 
-        self.stats.trades_executed += len(executed_trades)
-        self.stats.traded_quantity += sum(
-            trade["quantity"] for trade in executed_trades
-        )
+            self.orders.append(processed_order)
+            self.stats.orders_processed += 1
+            self.stats.total_quantity += processed_order.quantity
 
-        self._order_timestamps.append(perf_counter())
+            if normalized_side == "B":
+                self.stats.buy_orders += 1
+            else:
+                self.stats.sell_orders += 1
 
-        # Record execution timing for orders that generated trades.
-        if executed_trades:
-            self.trade_latency.record(entry_ns, exit_ns)
+            self.stats.trades_executed += len(executed_trades)
+            self.stats.traded_quantity += sum(
+                trade["quantity"] for trade in executed_trades
+            )
 
-        return {
-            "order_id": order.order_id,
-            "side": normalized_side,
-            "price_paise": order.price_paise,
-            "quantity": order.quantity,
-            "status": "accepted",
-            "processing_latency_ns": processing_ns,
-            "latency_unit": "ns",
-            "executed_trades": executed_trades,
-            "trades_count": len(executed_trades),
-            "remaining_order_quantity": sum(
-                item.quantity
-                for levels in (
-                    self.order_book.bids,
-                    self.order_book.asks,
-                )
-                for queue in levels.values()
-                for item in queue
-                if item.order_id == order.order_id
-            ),
-            "total_trades_in_book": len(self.order_book.trades),
-        }
+            self._order_timestamps.append(perf_counter())
+
+            if executed_trades:
+                self.trade_latency.record(entry_ns, exit_ns)
+
+            return {
+                "order_id": processed_order.order_id,
+                "side": normalized_side,
+                "price_paise": processed_order.price_paise,
+                "quantity": processed_order.quantity,
+                "status": "accepted",
+                "processing_latency_ns": processing_ns,
+                "latency_unit": "ns",
+                "executed_trades": executed_trades,
+                "trades_count": len(executed_trades),
+                "remaining_order_quantity": sum(
+                    item.quantity
+                    for levels in (
+                        self.order_book.bids,
+                        self.order_book.asks,
+                    )
+                    for queue in levels.values()
+                    for item in queue
+                    if item.order_id == processed_order.order_id
+                ),
+                "total_trades_in_book": len(self.order_book.trades),
+            }
 
     def get_stats(self) -> dict:
-        # Preserve the original statistics response for existing clients.
         return {
             "orders_processed": self.stats.orders_processed,
             "buy_orders": self.stats.buy_orders,

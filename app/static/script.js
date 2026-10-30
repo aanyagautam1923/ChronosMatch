@@ -1,4 +1,4 @@
-﻿"use strict";
+"use strict";
 
 /*
  * ChronosMatch Dashboard
@@ -252,10 +252,13 @@ function normalizeStats(payload) {
         ]),
 
         latencyUnit:
-            data.latency_unit ||
-            data.latency_units ||
-            latencyObject.unit ||
-            "",
+            data.average_latency_ms !== null &&
+            data.average_latency_ms !== undefined
+                ? "ms"
+                : (data.latency_unit ||
+                   data.latency_units ||
+                   latencyObject.unit ||
+                   ""),
 
         raw: data
     };
@@ -782,8 +785,3 @@ function initializeDashboard() {
 }
 
 document.addEventListener("DOMContentLoaded", initializeDashboard);
-
-
-
-
-
